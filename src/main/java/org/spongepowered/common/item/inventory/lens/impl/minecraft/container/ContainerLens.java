@@ -22,46 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.item.inventory.lens.impl;
+package org.spongepowered.common.item.inventory.lens.impl.minecraft.container;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.common.item.inventory.adapter.InventoryAdapter;
-import org.spongepowered.common.item.inventory.lens.Fabric;
 import org.spongepowered.common.item.inventory.lens.Lens;
 import org.spongepowered.common.item.inventory.lens.SlotProvider;
+import org.spongepowered.common.item.inventory.lens.impl.MinecraftLens;
 
-import java.lang.reflect.Constructor;
+import java.util.List;
 
-public abstract class MinecraftLens extends AbstractLens<IInventory, ItemStack> {
+public class ContainerLens extends MinecraftLens {
 
-    public MinecraftLens(int base, int size, Class<? extends Inventory> adapterType, SlotProvider<IInventory, ItemStack> slots) {
-        super(base, size, adapterType, slots);
-    }
+    // The viewed inventories
+    protected List<Lens<IInventory, ItemStack>> inventories;
 
-    public MinecraftLens(int base, int size, InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots) {
-        super(base, size, adapter, slots);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected Constructor<InventoryAdapter<IInventory, ItemStack>> getAdapterCtor() throws NoSuchMethodException {
-        try {
-            return (Constructor<InventoryAdapter<IInventory, ItemStack>>) this.adapterType.getConstructor(Fabric.class, this.getClass(), Inventory.class);
-        } catch (Exception ex1) {
-            return (Constructor<InventoryAdapter<IInventory, ItemStack>>) this.adapterType.getConstructor(Fabric.class, Lens.class, Inventory.class);
+    public ContainerLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots, List<Lens<IInventory, ItemStack>> lenses) {
+        super(0, adapter.getInventory().getSize(), adapter, slots);
+        this.inventories = lenses;
+        for (Lens<IInventory, ItemStack> lens : lenses) {
+            this.addSpanningChild(lens);
         }
     }
 
     @Override
-    public int getMaxStackSize(Fabric<IInventory> inv) {
-        return inv.getMaxStackSize();
-    }
+    protected void init(SlotProvider<IInventory, ItemStack> slots) {}
 
     @Override
-    public void invalidate(Fabric<IInventory> inv) {
-        super.invalidate(inv);
-//        inv.markDirty();    // Adapter can decide
+    protected boolean isDelayedInit() {
+        return true;
     }
 }

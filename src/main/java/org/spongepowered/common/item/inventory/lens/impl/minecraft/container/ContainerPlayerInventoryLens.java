@@ -22,50 +22,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.item.inventory.lens.impl.minecraft;
+package org.spongepowered.common.item.inventory.lens.impl.minecraft.container;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.common.item.inventory.adapter.InventoryAdapter;
-import org.spongepowered.common.item.inventory.lens.Lens;
 import org.spongepowered.common.item.inventory.lens.SlotProvider;
 import org.spongepowered.common.item.inventory.lens.impl.MinecraftLens;
+import org.spongepowered.common.item.inventory.lens.impl.comp.CraftingInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.GridInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.HotbarLensImpl;
+import org.spongepowered.common.item.inventory.lens.impl.comp.OrderedInventoryLensImpl;
+import org.spongepowered.common.item.inventory.lens.impl.slots.SlotLensImpl;
 
-/**
- * A {@link Lens} comprising of when a Minecraft-like {@link Chest} is opened.
- */
-public class ContainerChestInventoryLens extends MinecraftLens {
+public class ContainerPlayerInventoryLens extends MinecraftLens {
 
-    private GridInventoryLensImpl playerInventory, chestInventory;
-
-    private HotbarLensImpl hotbarInventory;
-    private int numRows;
-
-    public ContainerChestInventoryLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots, int numRows) {
+    public ContainerPlayerInventoryLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots) {
         super(0, adapter.getInventory().getSize(), adapter, slots);
-        this.numRows = numRows;
-        this.init(slots);
-    }
-
-    @Override
-    protected boolean isDelayedInit() {
-        return true;
     }
 
     @Override
     protected void init(SlotProvider<IInventory, ItemStack> slots) {
-        // These use chest container ids (distinct from normal slot ids)
-        this.chestInventory = new GridInventoryLensImpl(0, 9, this.numRows, 9, slots);
-        // (9 * numRows) lots after the chest slots
-        this.playerInventory = new GridInventoryLensImpl(9 * this.numRows, 9, 3, 9, slots);
-        // Add an additional 27 slots, for the player inventory
-        this.hotbarInventory = new HotbarLensImpl((9 * numRows) + 27, 9, slots);
+        final CraftingInventoryLensImpl crafting = new CraftingInventoryLensImpl(0, 1, 2, 2, 2, slots);
+        final OrderedInventoryLensImpl armor = new OrderedInventoryLensImpl((1 + 4), 4, 1, slots);
+        final GridInventoryLensImpl main = new GridInventoryLensImpl(((1 + 4) + 4), 9, 3, 9, slots);
+        final HotbarLensImpl hotbar = new HotbarLensImpl((((1 + 4) + 4) + 27), 9, slots);
+        final SlotLensImpl offHand = new SlotLensImpl(((((1 + 4) + 4) + 27) + 9));
 
-        this.addSpanningChild(this.chestInventory);
-        this.addSpanningChild(this.playerInventory);
-        this.addSpanningChild(this.hotbarInventory);
+        // TODO actual Container order is:
+        // CraftingOutput (1) -> Crafting (4) -> ArmorSlots (4) -> MainInventory (27) -> Hotbar (9) -> Offhand (1)
+        // how to handle issues like in #939? ; e.g. Inventory#offer using a different insertion order
+        this.addSpanningChild(hotbar);
+        this.addSpanningChild(main);
+        this.addSpanningChild(armor);
+        this.addSpanningChild(crafting);
+        this.addSpanningChild(offHand);
     }
 }
