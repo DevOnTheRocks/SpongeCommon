@@ -266,7 +266,8 @@ public final class ContainerUtil {
             int slotCount = entry.getValue().size();
             Lens<IInventory, ItemStack> lens = null;
             if (entry.getKey() instanceof InventoryAdapter) { // Check if sub-inventory is Adapter
-                lens = ((InventoryAdapter) entry.getKey()).getRootLens();
+                // TODO the lenses in "slots" are not used in this lens and thus cannot be found later
+                // lens = ((InventoryAdapter) entry.getKey()).getRootLens();
             }
             if (lens == null && entry.getKey() instanceof LensProvider) // Check if sub-inventory is LensProvider
             {
@@ -277,12 +278,14 @@ public final class ContainerUtil {
                     || lens.slotCount() != slotCount) { // Inventory size <> Lens size
                 if (entry.getKey() instanceof InventoryCraftResult) { // InventoryCraftResult is a Slot
                     Slot slot = entry.getValue().get(0);
+                    // TODO Slots directly in a container may cause problems
                     lens = new CraftingOutputSlotLensImpl(index, item -> slot.isItemValid(((ItemStack) item)),
                             itemType -> (slot.isItemValid((ItemStack) org.spongepowered.api.item.inventory.ItemStack.of(itemType, 1))));
                 } else if (entry.getKey() instanceof InventoryCrafting) { // InventoryCrafting has width and height
                     InventoryCrafting craftGrid = (InventoryCrafting) entry.getKey();
                     lens = new GridInventoryLensImpl(index, craftGrid.getWidth(), craftGrid.getHeight(), craftGrid.getWidth(), slots);
                 } else if (slotCount == 1) { // Unknown - A single Slot
+                    // TODO Slots directly in a container may cause problems
                     lens = new SlotLensImpl(index);
                 } else if (lens instanceof PlayerInventoryLens && slotCount == 36) { // Player
                     // Player Inventory + Hotbar

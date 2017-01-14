@@ -26,6 +26,7 @@ package org.spongepowered.common.item.inventory.lens.impl.minecraft.container;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import org.spongepowered.api.item.inventory.property.SlotIndex;
 import org.spongepowered.common.item.inventory.adapter.InventoryAdapter;
 import org.spongepowered.common.item.inventory.lens.Lens;
 import org.spongepowered.common.item.inventory.lens.SlotProvider;
@@ -36,18 +37,35 @@ import java.util.List;
 public class ContainerLens extends MinecraftLens {
 
     // The viewed inventories
-    protected List<Lens<IInventory, ItemStack>> inventories;
+    protected List<Lens<IInventory, ItemStack>> viewedInventories;
 
-    public ContainerLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots, List<Lens<IInventory, ItemStack>> lenses) {
+    public ContainerLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots,
+            List<Lens<IInventory, ItemStack>> lenses) {
+        this(adapter, slots);
+        this.viewedInventories = lenses;
+        this.init(slots);
+    }
+
+    /**
+     * Do not forget to call init when using this constructor!
+     */
+    public ContainerLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots) {
         super(0, adapter.getInventory().getSize(), adapter, slots);
-        this.inventories = lenses;
-        for (Lens<IInventory, ItemStack> lens : lenses) {
-            this.addSpanningChild(lens);
-        }
     }
 
     @Override
-    protected void init(SlotProvider<IInventory, ItemStack> slots) {}
+    protected void init(SlotProvider<IInventory, ItemStack> slots) {
+
+        // Adding slots
+        for (int ord = 0, slot = this.base; ord < this.size; ord++, slot++) {
+            this.addChild(slots.getSlot(slot), new SlotIndex(ord));
+        }
+
+        // Adding spanning children
+        for (Lens<IInventory, ItemStack> lens : viewedInventories) {
+            this.addSpanningChild(lens);
+        }
+    }
 
     @Override
     protected boolean isDelayedInit() {

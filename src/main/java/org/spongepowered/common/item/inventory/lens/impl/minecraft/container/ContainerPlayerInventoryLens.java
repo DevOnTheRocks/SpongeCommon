@@ -28,17 +28,19 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.common.item.inventory.adapter.InventoryAdapter;
 import org.spongepowered.common.item.inventory.lens.SlotProvider;
-import org.spongepowered.common.item.inventory.lens.impl.MinecraftLens;
 import org.spongepowered.common.item.inventory.lens.impl.comp.CraftingInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.GridInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.HotbarLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.OrderedInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.slots.SlotLensImpl;
 
-public class ContainerPlayerInventoryLens extends MinecraftLens {
+import java.util.Arrays;
+
+public class ContainerPlayerInventoryLens extends ContainerLens {
 
     public ContainerPlayerInventoryLens(InventoryAdapter<IInventory, ItemStack> adapter, SlotProvider<IInventory, ItemStack> slots) {
-        super(0, adapter.getInventory().getSize(), adapter, slots);
+        super(adapter, slots);
+        this.init(slots);
     }
 
     @Override
@@ -47,15 +49,12 @@ public class ContainerPlayerInventoryLens extends MinecraftLens {
         final OrderedInventoryLensImpl armor = new OrderedInventoryLensImpl((1 + 4), 4, 1, slots);
         final GridInventoryLensImpl main = new GridInventoryLensImpl(((1 + 4) + 4), 9, 3, 9, slots);
         final HotbarLensImpl hotbar = new HotbarLensImpl((((1 + 4) + 4) + 27), 9, slots);
-        final SlotLensImpl offHand = new SlotLensImpl(((((1 + 4) + 4) + 27) + 9));
+        final OrderedInventoryLensImpl offHand = new OrderedInventoryLensImpl(((((1 + 4) + 4) + 27) + 9), 1, 1, slots);
 
         // TODO actual Container order is:
         // CraftingOutput (1) -> Crafting (4) -> ArmorSlots (4) -> MainInventory (27) -> Hotbar (9) -> Offhand (1)
         // how to handle issues like in #939? ; e.g. Inventory#offer using a different insertion order
-        this.addSpanningChild(hotbar);
-        this.addSpanningChild(main);
-        this.addSpanningChild(armor);
-        this.addSpanningChild(crafting);
-        this.addSpanningChild(offHand);
+        this.viewedInventories = Arrays.asList(hotbar, main, armor, crafting, offHand);
+        super.init(slots);
     }
 }
