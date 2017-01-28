@@ -29,6 +29,7 @@ import net.minecraft.item.ItemStack;
 import org.spongepowered.common.item.inventory.adapter.InventoryAdapter;
 import org.spongepowered.common.item.inventory.lens.SlotProvider;
 import org.spongepowered.common.item.inventory.lens.impl.comp.CraftingInventoryLensImpl;
+import org.spongepowered.common.item.inventory.lens.impl.comp.EquipmentInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.GridInventoryLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.HotbarLensImpl;
 import org.spongepowered.common.item.inventory.lens.impl.comp.OrderedInventoryLensImpl;
@@ -46,7 +47,8 @@ public class ContainerPlayerInventoryLens extends ContainerLens {
     @Override
     protected void init(SlotProvider<IInventory, ItemStack> slots) {
         final CraftingInventoryLensImpl crafting = new CraftingInventoryLensImpl(0, 1, 2, 2, 2, slots);
-        final OrderedInventoryLensImpl armor = new OrderedInventoryLensImpl((1 + 4), 4, 1, slots);
+        // TODO pass player for carrier to EquipmentInventory
+        final EquipmentInventoryLensImpl armor = new EquipmentInventoryLensImpl(null, (1 + 4), 4, 1, slots);
         final GridInventoryLensImpl main = new GridInventoryLensImpl(((1 + 4) + 4), 9, 3, 9, slots);
         final HotbarLensImpl hotbar = new HotbarLensImpl((((1 + 4) + 4) + 27), 9, slots);
         final OrderedInventoryLensImpl offHand = new OrderedInventoryLensImpl(((((1 + 4) + 4) + 27) + 9), 1, 1, slots);
